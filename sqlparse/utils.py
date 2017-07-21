@@ -68,11 +68,11 @@ def recurse(*cls):
     :return: function
     """
     def wrap(f):
-        def wrapped_f(tlist):
+        def wrapped_f(self, tlist):
             for sgroup in tlist.get_sublists():
                 if not isinstance(sgroup, cls):
-                    wrapped_f(sgroup)
-            f(tlist)
+                    wrapped_f(self, sgroup)
+            f(self, tlist)
 
         return wrapped_f
 
@@ -87,13 +87,13 @@ def imt(token, i=None, m=None, t=None):
     :param t: TokenType or Tuple/List of TokenTypes
     :return:  bool
     """
-    clss = i
+    clss = [i, ] if i and not isinstance(i, list) else i
     types = [t, ] if t and not isinstance(t, list) else t
     mpatterns = [m, ] if m and not isinstance(m, list) else m
 
     if token is None:
         return False
-    elif clss and isinstance(token, clss):
+    elif clss and any(isinstance(token, cls) for cls in clss):
         return True
     elif mpatterns and any(token.match(*pattern) for pattern in mpatterns):
         return True

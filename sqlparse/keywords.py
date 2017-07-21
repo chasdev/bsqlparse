@@ -25,11 +25,16 @@ SQL_REGEX = {
         (r'(--|# ).*?(\r\n|\r|\n|$)', tokens.Comment.Single),
         (r'/\*[\s\S]*?\*/', tokens.Comment.Multiline),
 
+        (r'(REM).*?(\r\n|\r|\n|$)', tokens.Comment.Single.Rem),
+        (r'(START).*?(\r\n|\r|\n|$)', tokens.Comment.Single.Start),
+
         (r'(\r\n|\r|\n)', tokens.Newline),
         (r'\s+', tokens.Whitespace),
 
         (r':=', tokens.Assignment),
         (r'::', tokens.Punctuation),
+        # (r'\(\+\)', tokens.OuterJoinSign),
+        (r'[A-Z]\w*(\.[A-Z]\w*)?%(TYPE|ROWTYPE)\b', tokens.Type),
 
         (r'\*', tokens.Wildcard),
 
@@ -44,7 +49,7 @@ SQL_REGEX = {
         # FIXME(andi): VALUES shouldn't be listed here
         # see https://github.com/andialbrecht/sqlparse/pull/64
         # IN is special, it may be followed by a parenthesis, but
-        # is never a functino, see issue183
+        # is never a function, see issue183
         (r'(CASE|IN|VALUES|USING)\b', tokens.Keyword),
 
         (r'(@|##|#)[A-Z]\w+', tokens.Name),
@@ -71,8 +76,14 @@ SQL_REGEX = {
         (r'(?<![\w\])])(\[[^\]]+\])', tokens.Name),
         (r'((LEFT\s+|RIGHT\s+|FULL\s+)?(INNER\s+|OUTER\s+|STRAIGHT\s+)?'
          r'|(CROSS\s+|NATURAL\s+)?)?JOIN\b', tokens.Keyword),
-        (r'END(\s+IF|\s+LOOP|\s+WHILE)?\b', tokens.Keyword),
+        (r'END(\s+IF|\s+LOOP|\s+WHILE|\s+CASE)?\b', tokens.Keyword),
+
+        (r'FOR\s[A-Z]\w*\sIN\b', tokens.Keyword.ForIn),
+        (r'FOR\sUPDATE\b', tokens.Keyword),
+
         (r'NOT\s+NULL\b', tokens.Keyword),
+        (r'ROLLBACK\s+TO\b', tokens.Keyword.DML),
+
         (r'UNION\s+ALL\b', tokens.Keyword),
         (r'CREATE(\s+OR\s+REPLACE)?\b', tokens.Keyword.DDL),
         (r'DOUBLE\s+PRECISION\b', tokens.Name.Builtin),
@@ -271,7 +282,7 @@ KEYWORDS = {
     # 'G': tokens.Keyword,
     'GENERAL': tokens.Keyword,
     'GENERATED': tokens.Keyword,
-    'GET': tokens.Keyword,
+    # 'GET': tokens.Keyword,
     'GLOBAL': tokens.Keyword,
     'GO': tokens.Keyword,
     'GOTO': tokens.Keyword,
@@ -566,6 +577,7 @@ KEYWORDS = {
     'TRUNCATE': tokens.Keyword,
     'TRUSTED': tokens.Keyword,
     'TYPE': tokens.Keyword,
+    'ROWTYPE': tokens.Keyword,
 
     'UID': tokens.Keyword,
     'UNCOMMITTED': tokens.Keyword,
@@ -629,7 +641,7 @@ KEYWORDS = {
     'NUMBER': tokens.Name.Builtin,
     'NUMERIC': tokens.Name.Builtin,
     'REAL': tokens.Name.Builtin,
-    'ROWID': tokens.Name.Builtin,
+    # 'ROWID': tokens.Name.Builtin,
     'ROWLABEL': tokens.Name.Builtin,
     'ROWNUM': tokens.Name.Builtin,
     'SERIAL': tokens.Name.Builtin,
@@ -681,6 +693,7 @@ KEYWORDS_COMMON = {
     'LOOP': tokens.Keyword,
     'AS': tokens.Keyword,
     'ELSE': tokens.Keyword,
+    'ELSIF': tokens.Keyword,
     'FOR': tokens.Keyword,
     'WHILE': tokens.Keyword,
 
@@ -795,5 +808,4 @@ KEYWORDS_ORACLE = {
     'TRIGGERS': tokens.Keyword,
 
     'UNLIMITED': tokens.Keyword,
-    'UNLOCK': tokens.Keyword,
 }

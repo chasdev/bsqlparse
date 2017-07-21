@@ -28,6 +28,9 @@ class _TokenType(tuple):
         # self can be False only if its the `root` ie. Token itself
         return 'Token' + ('.' if self else '') + '.'.join(self)
 
+    def __call__(self, *args, **kwargs):
+        pass
+
 
 Token = _TokenType()
 
@@ -51,6 +54,8 @@ Comparison = Operator.Comparison
 Wildcard = Token.Wildcard
 Comment = Token.Comment
 Assignment = Token.Assignment
+Type = Token.Type
+OuterJoinSign = Token.OuterJoinSign
 
 # Generic types for non-source code
 Generic = Token.Generic
@@ -66,3 +71,5 @@ DML = Keyword.DML
 DDL = Keyword.DDL
 CTE = Keyword.CTE
 Command = Keyword.Command
+
+ForIn = Keyword.ForIn

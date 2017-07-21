@@ -18,6 +18,9 @@ class StatementSplitter(object):
         """Set the filter attributes to its default values"""
         self._in_declare = False
         self._is_create = False
+        self._in_case = False
+        self._infor = False
+        self._inwhile = False
         self._begin_depth = 0
 
         self.consume_ws = False
@@ -40,9 +43,9 @@ class StatementSplitter(object):
 
         # three keywords begin with CREATE, but only one of them is DDL
         # DDL Create though can contain more words such as "or replace"
-        if ttype is T.Keyword.DDL and unified.startswith('CREATE'):
+        if ttype is T.Keyword.DDL and unified == "CREATE OR REPLACE":
             self._is_create = True
-            return 0
+            return 1
 
         # can have nested declare inside of being...
         if unified == 'DECLARE' and self._is_create and self._begin_depth == 0:
@@ -54,21 +57,43 @@ class StatementSplitter(object):
             if self._is_create:
                 # FIXME(andi): This makes no sense.
                 return 1
-            return 0
+            return 1
 
-        # Should this respect a preceeding BEGIN?
+        # Should this respect a preceding BEGIN?
         # In CASE ... WHEN ... END this results in a split level -1.
-        # Would having multiple CASE WHEN END and a Assigment Operator
+        # Would having multiple CASE WHEN END and a Assignment Operator
         # cause the statement to cut off prematurely?
         if unified == 'END':
+            if self._in_case:
+                self._in_case = False
+                return -1
             self._begin_depth = max(0, self._begin_depth - 1)
             return -1
 
-        if (unified in ('IF', 'FOR', 'WHILE') and
+        if ((unified.startswith(
+            'FOR') and ttype == T.ForIn) or unified == 'LOOP') and self._is_create and self._begin_depth > 0:
+            if unified.startswith('FOR'):
+                self._infor = True
+                return 1
+            if self._infor:
+                self._infor = False
+                return 0
+            if self._inwhile:
+                self._inwhile = False
+                return 0
+            else:
+                return 1
+
+        # if (unified in ('IF', 'FOR', 'WHILE', 'LOOP') and
+        if (unified in ('IF', 'WHILE', 'CASE') and
                 self._is_create and self._begin_depth > 0):
+            if unified == 'CASE':
+                self._in_case = True
+            if unified == 'WHILE':
+                self._inwhile = True
             return 1
 
-        if unified in ('END IF', 'END FOR', 'END WHILE'):
+        if unified in ('END IF', 'END WHILE', 'END LOOP', 'END CASE'):
             return -1
 
         # Default
@@ -79,27 +104,70 @@ class StatementSplitter(object):
         EOS_TTYPE = T.Whitespace, T.Comment.Single
 
         # Run over all stream tokens
+        # for ttype, value in stream:
+        #     # Yield token if we finished a statement and there's no whitespaces
+        #     # It will count newline token as a non whitespace. In this context
+        #     # whitespace ignores newlines.
+        #     # why don't multi line comments also count?
+        #     if self.consume_ws and ttype not in EOS_TTYPE:
+        #         yield sql.Statement(self.tokens)
+        #
+        #         # Reset filter and prepare to process next statement
+        #         self._reset()
+        #
+        #     # Change current split level (increase, decrease or remain equal)
+        #     self.level += self._change_splitlevel(ttype, value)
+        #
+        #     # Append the token to the current statement
+        #     self.tokens.append(sql.Token(ttype, value))
+        #
+        #     # Check if we get the end of a statement
+        #     if self.level <= 0 and ttype is T.Punctuation and value == ';':
+        #         #self.consume_ws = True
+        #         self.consume_ws = False
+
         for ttype, value in stream:
-            # Yield token if we finished a statement and there's no whitespaces
-            # It will count newline token as a non whitespace. In this context
-            # whitespace ignores newlines.
-            # why don't multi line comments also count?
-            if self.consume_ws and ttype not in EOS_TTYPE:
-                yield sql.Statement(self.tokens)
+            # start with new token
+            csl = self._change_splitlevel(ttype, value)
+            self.level += csl
 
-                # Reset filter and prepare to process next statement
-                self._reset()
-
-            # Change current split level (increase, decrease or remain equal)
-            self.level += self._change_splitlevel(ttype, value)
-
-            # Append the token to the current statement
-            self.tokens.append(sql.Token(ttype, value))
-
-            # Check if we get the end of a statement
-            if self.level <= 0 and ttype is T.Punctuation and value == ';':
-                self.consume_ws = True
-
+            if csl == 1:
+                self.add_new_token_array_at(self.level)
+                self.append_token_at_depth(self.level, sql.Token(ttype, value))
+            elif csl == -1:
+                self.append_token_at_depth(self.level + 1, sql.Token(ttype, value))
+                self.process_list_at_depth(self.level + 1)
+            else:
+                self.append_token_at_depth(self.level, sql.Token(ttype, value))
+        while self.level > 0:
+            self.level += -1
+            self.process_list_at_depth(self.level + 1)
         # Yield pending statement (if any)
         if self.tokens:
             yield sql.Statement(self.tokens)
+
+    # Add a new array list
+    def add_new_token_array_at(self, depth):
+        temp = self.tokens
+        for i in range(depth):
+            if i < depth - 1:
+                temp = temp[len(temp) - 1]
+            else:
+                temp.append([])
+
+    def append_token_at_depth(self, depth, token):
+        temp = self.tokens
+        for i in range(depth + 1):
+            if i < depth:
+                temp = temp[len(temp) - 1]
+            else:
+                temp.append(token)
+
+    def process_list_at_depth(self, depth):
+        temp = self.tokens
+        for i in range(depth):
+            if i < depth - 1:
+                temp = temp[len(temp) - 1]
+            else:
+                temp_tokenlist = sql.Statement(temp.pop())
+                temp.append(temp_tokenlist)

@@ -8,7 +8,7 @@
 """filter"""
 
 from sqlparse import lexer
-from sqlparse.engine import grouping
+from sqlparse.engine import grouping, grouping_class
 from sqlparse.engine.statement_splitter import StatementSplitter
 
 
@@ -33,7 +33,9 @@ class FilterStack(object):
         # Output: Stream processed Statements
         for stmt in stream:
             if self._grouping:
-                stmt = grouping.group(stmt)
+                gc = grouping_class.grouping()
+                # stmt = grouping.group(stmt)
+                stmt = gc.group(stmt)
 
             for filter_ in self.stmtprocess:
                 filter_.process(stmt)

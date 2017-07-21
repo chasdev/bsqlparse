@@ -14,6 +14,8 @@ from sqlparse import tokens as T
 from sqlparse.compat import string_types, text_type, unicode_compatible
 from sqlparse.utils import imt, remove_quotes
 
+import inspect
+
 
 @unicode_compatible
 class Token(object):
@@ -57,15 +59,15 @@ class Token(object):
 
     def _get_repr_value(self):
         raw = text_type(self)
-        if len(raw) > 7:
-            raw = raw[:6] + '...'
+        # if len(raw) > 100:
+        #     raw = raw[:99] + '...'
         return re.sub(r'\s+', ' ', raw)
 
     def flatten(self):
         """Resolve subgroups."""
         yield self
 
-    def match(self, ttype, values, regex=False):
+    def match(self, ttype, values, regex=False, ignorecase=False):
         """Checks whether the token matches the given arguments.
 
         *ttype* is a token type. If this token doesn't match the given token
@@ -86,7 +88,7 @@ class Token(object):
 
         if regex:
             # TODO: Add test for regex with is_keyboard = false
-            flag = re.IGNORECASE if self.is_keyword else 0
+            flag = re.IGNORECASE if self.is_keyword or ignorecase else 0
             values = (re.compile(v, flag) for v in values)
 
             for pattern in values:
@@ -125,6 +127,33 @@ class Token(object):
             parent = parent.parent
         return False
 
+    def get_ancestor(self, cls):
+        parent = self.parent
+        while parent:
+            if isinstance(parent, cls):
+                return parent
+            parent = parent.parent
+        return False
+
+    def toJson(self):
+        return dict(
+            (key, value)
+            for key, value in inspect.getmembers(self)
+            if not key.startswith("__")
+            and not key.startswith("parent")
+            and not key.startswith("_groupable_tokens")
+            and not key.startswith("M_OPEN")
+            and not key.startswith("M_CLOSE")
+            and not inspect.isabstract(value)
+            and not inspect.isbuiltin(value)
+            and not inspect.isfunction(value)
+            and not inspect.isgenerator(value)
+            and not inspect.isgeneratorfunction(value)
+            and not inspect.ismethod(value)
+            and not inspect.ismethoddescriptor(value)
+            and not inspect.isroutine(value)
+        )
+
 
 @unicode_compatible
 class TokenList(Token):
@@ -155,8 +184,14 @@ class TokenList(Token):
     def __getitem__(self, item):
         return self.tokens[item]
 
+    def pop(self, index=-1):
+        return self.tokens.pop(index)
+
     def _get_repr_name(self):
         return type(self).__name__
+
+    def pprint_tree(self, f=None):
+        self._pprint_tree(f=f)
 
     def _pprint_tree(self, max_depth=None, depth=0, f=None):
         """Pretty-print the object tree."""
@@ -165,12 +200,38 @@ class TokenList(Token):
             cls = token._get_repr_name()
             value = token._get_repr_value()
 
-            q = u'"' if value.startswith("'") and value.endswith("'") else u"'"
-            print(u"{indent}{idx:2d} {cls} {q}{value}{q}"
-                  .format(**locals()), file=f)
-
             if token.is_group and (max_depth is None or depth < max_depth):
+                print(u"{indent}{idx:2d} {cls}"
+                      .format(**locals()), file=f)
                 token._pprint_tree(max_depth, depth + 1, f)
+            else:
+                q = u'"' if value.startswith("'") and value.endswith("'") else u"'"
+                print(u"{indent}{idx:2d} {cls} {q}{value}{q}".format(**locals()), file=f)
+
+    def toJson(self):
+        d = {}
+        for key, value in inspect.getmembers(self):
+            if not key.startswith("__") \
+                and not key.startswith("parent") \
+                and not key.startswith("_groupable_tokens") \
+                and not key.startswith("M_OPEN") \
+                and not key.startswith("M_CLOSE") \
+                and not inspect.isabstract(value) \
+                and not inspect.isbuiltin(value) \
+                and not inspect.isfunction(value) \
+                and not inspect.isgenerator(value) \
+                and not inspect.isgeneratorfunction(value) \
+                and not inspect.ismethod(value) \
+                and not inspect.ismethoddescriptor(value) \
+                and not inspect.isroutine(value):
+                if key == "tokens":
+                    d[key] = []
+                    for token in value:
+                        d[key].append(token.toJson())
+                else:
+                    d[key] = value
+
+        return d
 
     def get_token_at_offset(self, offset):
         """Returns the token that is on position offset."""
@@ -237,6 +298,20 @@ class TokenList(Token):
         funcs = lambda tk: not ((skip_ws and tk.is_whitespace) or
                                 (skip_cm and imt(tk, t=T.Comment, i=Comment)))
         return self._token_matching(funcs)[1]
+
+    def token_last(self, skip_ws=True, skip_cm=False):
+        """Returns the first child token.
+
+        If *skip_ws* is ``True`` (the default), whitespace
+        tokens are ignored.
+
+        if *skip_cm* is ``True`` (default: ``False``), comments are
+        ignored too.
+        """
+        # this on is inconsistent, using Comment instead of T.Comment...
+        funcs = lambda tk: not ((skip_ws and tk.is_whitespace) or
+                                (skip_cm and imt(tk, t=T.Comment, i=Comment)))
+        return self._token_matching(funcs, start=len(self.tokens) + 1, reverse=True)[1]
 
     def token_next_by(self, i=None, m=None, t=None, idx=-1, end=None):
         funcs = lambda tk: imt(tk, i, m, t)
@@ -497,11 +572,241 @@ class If(TokenList):
     M_OPEN = T.Keyword, 'IF'
     M_CLOSE = T.Keyword, 'END IF'
 
+    def get_block(self, index):
+        block_start, start_then = self.token_next_by(m=(T.Keyword, "THEN"))
+        start_then += 1
+
+        while True:
+            nxtid, _nxttkn = self.token_next_by(m=(T.Keyword, "ELSIF"))
+            if _nxttkn:
+                if start_then <= index < nxtid:
+                    return start_then, nxtid - 1
+                else:
+                    block_start, start_then = self.token_next_by(m=(T.Keyword, "THEN"))
+                    start_then += 1
+                    continue
+
+            nxtid, _nxttkn = self.token_next_by(m=(T.Keyword, "ELSE"))
+            if _nxttkn:
+                if start_then <= index < nxtid:
+                    return start_then, nxtid - 1
+                else:
+                    start_then += 1
+                    continue
+
+            nxtid, _nxttkn = self.token_next_by(m=(T.Keyword, "END IF"))
+            if _nxttkn:
+                if start_then <= index < nxtid:
+                    return start_then, nxtid - 1
+                else:
+                    break
+
+        return None, None
+
+
+class Select(TokenList):
+    """An 'select' clause within packages ending with ';'."""
+    M_OPEN = T.Keyword.DML, 'SELECT'
+    M_CLOSE = [(T.Punctuation, ';'), (T.Keyword, 'UNION'), (T.Keyword, 'UNION ALL')]
+
+    @property
+    def from_list(self):
+        _from = T.Keyword, 'FROM'
+        _from_index, _from_token = self.token_next_by(m=_from)
+        _table_list_index, _table_list = self.token_next(_from_index, skip_ws=True, skip_cm=True)
+        return _table_list
+
+    @property
+    def into_list(self):
+        _into = T.Keyword, 'INTO'
+        _into_index, _into_token = self.token_next_by(m=_into)
+        if _into_token:
+            _list_index, _list = self.token_next(_into_index, skip_ws=True, skip_cm=True)
+            return _list
+        return False
+
+    @property
+    def select_element_list(self):
+        _select = T.Keyword.DML, 'SELECT'
+        _select_index, _select_token = self.token_next_by(m=_select)
+        _list_index, _list = self.token_next(_select_index, skip_ws=True, skip_cm=True)
+        return _list
+
+    @property
+    def where_list(self):
+        _where_index, _where_token = self.token_next_by(i=Where)
+        if _where_token:
+            return _where_token
+
+
+class DML_Operation(TokenList):
+    """An 'select' clause within packages ending with ';'."""
+    M_OPEN = T.Keyword.DML, ('INSERT', 'UPDATE', 'DELETE')
+    M_CLOSE = T.Punctuation, ';'
+
+
+class Package(TokenList):
+    """ Package """
+
+    @property
+    def fp(self):
+        t = []
+        # tidx, token = self.token_next_by(m=[FunctionHeading.M_OPEN, ProcedureHeading.M_OPEN])
+        # fl = list(enumerate(self.flatten()))
+        # for i, to in fl:
+        #     if to.match(FunctionHeading.M_OPEN[0], FunctionHeading.M_OPEN[1])
+        # or to.match(ProcedureHeading.M_OPEN[0], ProcedureHeading.M_OPEN[1]):
+        #         # self.__fp.append(to)
+        #         self.__fp.append(fl[i+2][1])
+        tidx, token = self.token_next_by(i=[FunctionBlock, ProcedureBlock])
+        while token:
+            t.append(token)
+            # t.append(self.token_next(tidx, skip_cm=True)[1])
+            t_temp = self._fp(token)
+            t += t_temp
+            tidx, token = self.token_next_by(i=[FunctionBlock, ProcedureBlock], idx=tidx)
+        return t  # return self.__fp
+
+    def _fp(self, tk):
+        t = []
+        tidx, tk = tk.token_next_by(i=DeclareSection)
+        if tk:
+            tidx, token = tk.token_next_by(i=[FunctionBlock, ProcedureBlock])
+            while token:
+                t.append(token)
+                t_temp = self._fp(token)
+                t += t_temp
+                tidx, token = tk.token_next_by(i=[FunctionBlock, ProcedureBlock], idx=tidx)
+        return t
+
+    @property
+    def fpn(self):
+        n = []
+        for efp in self.fp:
+            n.append(efp.get_my_name())
+        return n
+
+
+class PackageHeading(TokenList):
+    """ Procedure Heading Class """
+    M_OPEN = T.Keyword.DDL, "CREATE OR REPLACE"
+    M_NEXT = T.Keyword, "PACKAGE"
+    M_CLOSE = T.Keyword, ('IS', 'AS')
+
+
+class FunctionHeading(TokenList):
+    """Group procedure and function."""
+    M_OPEN = T.Keyword, 'FUNCTION', False, True
+    M_CLOSE = [(T.Keyword, ('IS', 'AS')), (T.Punctuation, ';'), (T.Punctuation, ','), ]
+
+    def get_parameters(self):
+        """Return a list of parameters."""
+        fidx, func = self.token_next_by(i=Function)
+        return func.get_parameters()
+        # for token in func.tokens:
+        #     if isinstance(token, IdentifierList):
+        #         return token.get_identifiers()
+        #     elif imt(token, i=(Function, Identifier), t=T.Literal):
+        #         return [token, ]
+        # return []
+
+
+class ProcedureHeading(TokenList):
+    """A function or procedure call."""
+    M_OPEN = T.Keyword, 'PROCEDURE', False, True
+
+    def get_parameters(self):
+        """Return a list of parameters."""
+        fidx, func = self.token_next_by(i=Function)
+        return func.get_parameters()
+        # parenthesis = self.tokens[-1]
+        # for token in parenthesis.tokens:
+        #     if isinstance(token, IdentifierList):
+        #         return token.get_identifiers()
+        #     elif imt(token, i=(Function, Identifier), t=T.Literal):
+        #         return [token, ]
+        # return []
+
+
+class FunctionParam(TokenList):
+    SEPARATOR = T.Punctuation, ","
+    """ Group each params of function """
+
+    def param_info(self):
+        self.param_name = None
+        self.in_ = None
+        self.out_ = None
+        self.nocopy_ = None
+        self.data_type_ = None
+        temp_i = 0
+        for i, token in enumerate(self.flatten()):
+            if not token.is_whitespace:
+                if not self.param_name:
+                    temp_i = i
+                    self.param_name = token
+                    continue
+                if not self.in_ and imt(token, m=(T.Keyword, 'IN')):
+                    temp_i = i
+                    self.in_ = token
+                    continue
+                if not self.out_ and imt(token, m=(T.Keyword, 'OUT')):
+                    temp_i = i
+                    self.out_ = token
+                    continue
+                if self.out_ and token.value == 'NOCOPY':
+                    temp_i = i
+                    self.nocopy_ = token
+                    continue
+                if not self.data_type_ and imt(token, m=[(T.Keyword, 'DEFAULT')], t=T.Assignment):
+                    self.data_type_ = list(self.flatten())[temp_i + 2:i - 1]
+                    # self.data_type_ = list(self.flatten())[i-1]
+        if not self.data_type_:
+            self.data_type_ = list(self.flatten())[temp_i + 2:i + 1]
+            # self.data_type_ = list(self.flatten())[i]
+
+
+class DeclareSection(TokenList):
+    """ function declare section """
+    M_OPEN = T.Keyword, ('IS', 'AS')
+    SEPARATOR = T.Punctuation, ';'
+
+    @property
+    def declared_variables(self):
+        """Return a list of variables."""
+        params = []
+        for token in self.tokens:
+            if not (token.is_whitespace or token.match(T.Punctuation, ';')):
+                params.append(token)
+        return params
+
+    def group_variables(self):
+        stkn = self.token_first(skip_cm=True)
+        if stkn:
+            end, param = self.token_next_by(m=self.SEPARATOR)
+            if param:
+                while param:
+                    gtkn = self.group_tokens(DataType, self.token_index(stkn), end - 1)
+                    start, stkn = self.token_next(self.token_index(param), skip_cm=True)
+                    if start:
+                        end, param = self.token_next_by(m=self.SEPARATOR, idx=start)
+                    else:
+                        break
+
+
+class DataType(TokenList):
+    """ Param Data type"""
+
 
 class For(TokenList):
     """A 'FOR' loop."""
-    M_OPEN = T.Keyword, ('FOR', 'FOREACH')
+    # M_OPEN = T.Keyword, ('FOR', 'FOREACH')
+    M_OPEN = [(T.ForIn, r'FOR\s[A-Z]\w*\sIN\b', True), (T.Keyword, 'LOOP')]
     M_CLOSE = T.Keyword, 'END LOOP'
+
+    @property
+    def loop_idx(self):
+        idx, lo = self.token_next_by(t=(T.Keyword, 'LOOP'))
+        return idx
 
 
 class Comparison(TokenList):
@@ -523,11 +828,74 @@ class Comment(TokenList):
         return self.tokens and self.tokens[0].ttype == T.Comment.Multiline
 
 
+class Block(TokenList):
+    """ Parent for function and procedure block"""
+
+    def __init__(self, tokens=None):
+        super(Block, self).__init__(tokens)
+        self.referenced_by = []
+
+    @property
+    def references(self):
+        _beginidx, _begintkn = self.token_next_by(i=Begin)
+        _flist = self._get_all_functions(_begintkn.get_sublists())
+        return _flist
+
+    def _get_all_functions(self, l):
+        fl = []
+        _package = self.get_ancestor(Package)
+        for su in l:
+            if isinstance(su, Function):
+                if isinstance(su.parent, Identifier):
+                    fl.append(su.parent)
+                elif su.name in _package.fpn:
+                    fl.append(su)
+            fl += self._get_all_functions(su.get_sublists())
+        return fl
+
+
+class FunctionBlock(Block):
+    """ A function block """
+
+    def get_my_name(self):
+        fhid, fhtk = self.token_next_by(i=FunctionHeading)
+        fid, ftk = fhtk.token_next_by(i=Function)
+        if ftk:
+            return ftk.name
+        else:
+            fid, ftk = fhtk.token_next_by(m=FunctionHeading.M_OPEN)
+            if ftk:
+                nid, ntkn = fhtk.token_next(idx=fid, skip_cm=True)
+                return str(ntkn.value)
+            return str(fhtk.parent.token_last().value)
+
+
+class ProcedureBlock(Block):
+    """ A procedure block """
+
+    def get_my_name(self):
+        phid, phtk = self.token_next_by(i=ProcedureHeading)
+        fid, ftk = phtk.token_next_by(i=Function)
+        if ftk:
+            return ftk.name
+        else:
+            fid, ftk = phtk.token_next_by(m=ProcedureHeading.M_OPEN)
+            if ftk:
+                nid, ntkn = phtk.token_next(idx=fid, skip_cm=True)
+                return str(ntkn.value)
+            return str(phtk.parent.token_last().value)
+
+
 class Where(TokenList):
     """A WHERE clause."""
     M_OPEN = T.Keyword, 'WHERE'
     M_CLOSE = T.Keyword, ('ORDER', 'GROUP', 'LIMIT', 'UNION', 'EXCEPT',
-                          'HAVING', 'RETURNING', 'INTO')
+                          'HAVING', 'RETURNING', 'INTO', 'FOR UPDATE')
+
+
+class Union(TokenList):
+    """A WHERE clause."""
+    M_DIVIDER = T.Keyword, ('UNION', 'UNION ALL')
 
 
 class Case(TokenList):
@@ -586,15 +954,24 @@ class Case(TokenList):
 class Function(TokenList):
     """A function or procedure call."""
 
+    @property
+    def name(self):
+        return str(self.token_first(skip_cm=True))
+
     def get_parameters(self):
         """Return a list of parameters."""
         parenthesis = self.tokens[-1]
+        # params = []
+        # for token in parenthesis.tokens:
+        #     if not (token.is_whitespace or token.match(T.Punctuation, ',')):
+        #         params.append(token)
         for token in parenthesis.tokens:
             if isinstance(token, IdentifierList):
                 return token.get_identifiers()
-            elif imt(token, i=(Function, Identifier), t=T.Literal):
+            elif imt(token, i=(Function, Identifier, FunctionParam), t=T.Literal):
                 return [token, ]
         return []
+        # return params
 
 
 class Begin(TokenList):
@@ -603,5 +980,75 @@ class Begin(TokenList):
     M_CLOSE = T.Keyword, 'END'
 
 
+class Transaction(TokenList):
+    """ A transaction block """
+    M_CLOSE = T.Keyword.DML, ('COMMIT', 'ROLLBACK', 'ROLLBACK TO')
+
+    # def __init__(self, tokens=None):
+    #     super(Transaction, self).__init__(tokens)
+    #     self.updated_transaction = False
+    #
+    # # def type_of_transaction(self, idx=0):
+    # #     return self.token_next_by(m=self.M_CLOSE, idx=idx)
+    #
+    # def add_begin_and_end(self):
+    #     w_0 = Token(T.Newline, '\n')
+    #     begin = Token(T.Keyword, 'BEGIN')
+    #     w_1 = Token(T.Newline, '\n')
+    #
+    #     self.insert_before(0, w_0)
+    #     self.insert_before(1, begin)
+    #     self.insert_before(2, w_1)
+    #
+    #     end = Token(T.Keyword, 'END')
+    #     w_2 = Token(T.Newline, '\n')
+    #     pun = Token(T.Punctuation, ";")
+    #     w_3 = Token(T.Newline, '\n')
+    #
+    #     self.insert_after(self.tokens[-1], w_2)
+    #     self.insert_after(self.tokens[-1], end)
+    #     self.insert_after(self.tokens[-1], pun)
+    #     self.insert_after(self.tokens[-1], w_3)
+    #
+    # def set_updated(self):
+    #     self.updated_transaction = True
+    #
+    # @staticmethod
+    # def update_text(token):
+    #     for t in token.get_sublists():
+    #         Transaction.update_text(t)
+    #     tid, tok = Transaction.type_of_transaction(token)
+    #     while tok:
+    #         if tok.value == "ROLLBACK":
+    #             token.pop(tid)
+    #             updated_transaction = sqlparse.parse(cfg.replacer["ROLLBACK"])[0]
+    #         elif tok.value == "COMMIT":
+    #             token.pop(tid)
+    #             updated_transaction = sqlparse.parse(cfg.replacer["COMMIT"])[0]
+    #         else:
+    #             print("There is a 'ROLLBACK TO' in this file")
+    #             tid, tok = Transaction.type_of_transaction(token, tid)
+    #             continue
+    #
+    #         for idx, tk in enumerate(updated_transaction.tokens):
+    #             token.insert_after(tid - 1 + idx, tk)
+    #
+    #         tid, tok = Transaction.type_of_transaction(token, tid)
+    #
+    # @staticmethod
+    # def type_of_transaction(token, idx=0):
+    #     return token.token_next_by(m=Transaction.M_CLOSE, idx=idx)
+
+
 class Operation(TokenList):
     """Grouping of operations"""
+
+
+class ReturnType(TokenList):
+    """ Grouping return and return type """
+    M_OPEN = T.Keyword, 'RETURN'
+
+
+class CursorDef(TokenList):
+    M_OPEN = T.Keyword, 'CURSOR'
+    M_MIDDLE = T.Keyword, 'IS'
