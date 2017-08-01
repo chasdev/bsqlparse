@@ -445,17 +445,39 @@ class grouping:
         while functkn:
             prnidx, prntkn = functkn.token_next_by(i=sql.Parenthesis)
             if prntkn:
-                start = 1
+                oidx, otkn = prntkn.token_next_by(m=sql.Parenthesis.M_OPEN)
+                start, stkn = prntkn.token_next(oidx, skip_cm=True)
                 end, param = prntkn.token_next_by(m=sql.FunctionParam.SEPARATOR)
                 if param:
                     while param:
-                        start = prntkn.token_index(prntkn.group_tokens(sql.FunctionParam, start, end - 1)) + 2
+                        prntkn.group_tokens(sql.FunctionParam, start, prntkn.token_prev(end, skip_cm=True)[0])
+                        start = prntkn.token_next(prntkn.token_index(param), skip_cm=True)[0]
                         end, param = prntkn.token_next_by(m=sql.FunctionParam.SEPARATOR, idx=start)
-                    prntkn.group_tokens(sql.FunctionParam, start, len(prntkn.tokens) - 2)
+                    cidx, ctkn = prntkn.token_next_by(m=sql.Parenthesis.M_CLOSE)
+                    end, etkn = prntkn.token_prev(cidx, skip_cm=True)
+                    prntkn.group_tokens(sql.FunctionParam, start, end)
                 else:
-                    prntkn.group_tokens(sql.FunctionParam, start, len(prntkn.tokens) - 2)
+                    cidx, ctkn = prntkn.token_next_by(m=sql.Parenthesis.M_CLOSE)
+                    end, etkn = prntkn.token_prev(cidx, skip_cm=True)
+                    prntkn.group_tokens(sql.FunctionParam, start, end)
 
             funidx, functkn = tlist.token_next_by(i=sql.Function, idx=funidx)
+            # funidx, functkn = tlist.token_next_by(i=sql.Function)
+            #
+            # while functkn:
+            #     prnidx, prntkn = functkn.token_next_by(i=sql.Parenthesis)
+            #     if prntkn:
+            #         start = 1
+            #         end, param = prntkn.token_next_by(m=sql.FunctionParam.SEPARATOR)
+            #         if param:
+            #             while param:
+            #                 start = prntkn.token_index(prntkn.group_tokens(sql.FunctionParam, start, end - 1)) + 2
+            #                 end, param = prntkn.token_next_by(m=sql.FunctionParam.SEPARATOR, idx=start)
+            #             prntkn.group_tokens(sql.FunctionParam, start, len(prntkn.tokens) - 2)
+            #         else:
+            #             prntkn.group_tokens(sql.FunctionParam, start, len(prntkn.tokens) - 2)
+            #
+            #     funidx, functkn = tlist.token_next_by(i=sql.Function, idx=funidx)
 
     @recurse(sql.DeclareSection)
     def group_declare_section(self, tlist):

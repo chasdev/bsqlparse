@@ -965,7 +965,7 @@ class Function(TokenList):
         # for token in parenthesis.tokens:
         #     if not (token.is_whitespace or token.match(T.Punctuation, ',')):
         #         params.append(token)
-        for token in parenthesis.tokens:
+        for token in parenthesis.tokens[1:-1]:
             if isinstance(token, IdentifierList):
                 return token.get_identifiers()
             elif imt(token, i=(Function, Identifier, FunctionParam), t=T.Literal):
