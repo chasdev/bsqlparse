@@ -1052,3 +1052,8 @@ class ReturnType(TokenList):
 class CursorDef(TokenList):
     M_OPEN = T.Keyword, 'CURSOR'
     M_MIDDLE = T.Keyword, 'IS'
+
+
+class Exceptions(TokenList):
+    M_OPEN = T.Keyword, 'EXCEPTION'
+    M_CLOSE = T.Keyword, 'END'

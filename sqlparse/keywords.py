@@ -59,7 +59,6 @@ SQL_REGEX = {
         # TODO: Spaces before period not implemented
         (r'[A-Z]\w*(?=\s*\.)', tokens.Name),  # 'Name'   .
         (r'(?<=\.)[A-Z]\w*', tokens.Name),  # .'Name'
-        (r'[A-Z]\w*(?=\()', tokens.Name),  # side effect: change kw to func
 
         # TODO: `1.` and `.1` are valid numbers
         (r'-?0x[\dA-F]+', tokens.Number.Hexadecimal),
@@ -89,6 +88,8 @@ SQL_REGEX = {
         (r'DOUBLE\s+PRECISION\b', tokens.Name.Builtin),
 
         (r'[_A-Z][_$#\w]*', is_keyword),
+
+        (r'[A-Z]\w*(?=\()', tokens.Name),  # side effect: change kw to func
 
         (r'[;:()\[\],\.]', tokens.Punctuation),
         (r'[<>=~!]+', tokens.Operator.Comparison),

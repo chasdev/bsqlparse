@@ -98,7 +98,7 @@ class grouping:
                             # instead of break, continue in case other "valid" groups exist
                             break
                         close_idx = tidx
-                        if matcher[1] == "UNION":
+                        if matcher[1].upper() == "UNION" or matcher[1].upper() == "UNION ALL":
                             close_idx = tlist.token_prev(idx=tidx, skip_cm=True)[0]
                         tlist.group_tokens(sql.Select, open_idx, close_idx)
                         tidx_offset += close_idx - open_idx
@@ -426,12 +426,12 @@ class grouping:
                 if btoken:
                     end, etoken = tlist.token_next(idx=bid, skip_cm=True, skip_ws=True)
                     if etoken:
-                        # end, token = tlist.token_next(idx=end, skip_cm=True, skip_ws=True)
-                        # if token.value == ';':
-                        #     tlist.group_tokens(sql.ProcedureBlock, start, end)
-                        # else:
-                        #     tlist.group_tokens(sql.ProcedureBlock, start, end)
-                        tlist.group_tokens(sql.ProcedureBlock, start, end)
+                        send, stoken = tlist.token_next(idx=end, skip_cm=True, skip_ws=True)
+                        if stoken.value == ';':
+                            tlist.group_tokens(sql.ProcedureBlock, start, send)
+                        else:
+                            tlist.group_tokens(sql.ProcedureBlock, start, end)
+                        # tlist.group_tokens(sql.ProcedureBlock, start, end)
                     else:
                         tlist.group_tokens(sql.ProcedureBlock, start, bid)
                         # tlist.group_tokens(sql.ProcedureBlock, start, end)
@@ -752,6 +752,41 @@ class grouping:
                     tlist.group_tokens(sql.CursorDef, tidx, nidx)
             tidx, token = tlist.token_next_by(m=sql.CursorDef.M_OPEN, idx=tidx)
 
+    def group_exceptions(self, tlist):
+        def match(token):
+            return token.is_keyword and (token.match(*sql.Exceptions.M_OPEN) or token.match(*sql.Exceptions.M_CLOSE))
+
+        def valid_prev(token):
+            return token.is_keyword and token.match(*sql.Exceptions.M_OPEN)
+
+        def valid_next(token):
+            return token is not None and token.is_keyword and token.match(*sql.Exceptions.M_CLOSE)
+
+        def post(tlist, pidx, tidx):
+            return pidx, tlist.token_prev(tidx, skip_cm=True)[0]
+
+        tidx_offset = 0
+        pidx, prev_ = None, None
+        for idx, token in enumerate(list(tlist)):
+            tidx = idx - tidx_offset
+
+            if token.is_whitespace:
+                continue
+
+            if token.is_group and not isinstance(token, sql.Exceptions):
+                self.group_exceptions(token)
+
+            if match(token):
+                if prev_ and valid_prev(prev_) and valid_next(token):
+                    from_idx, to_idx = post(tlist, pidx, tidx)
+                    grp = tlist.group_tokens(sql.Exceptions, from_idx, to_idx)
+
+                    tidx_offset += to_idx - from_idx
+                    pidx, prev_ = from_idx, grp
+                    continue
+
+                pidx, prev_ = tidx, token
+
     def group(self, stmt):
         for func in [
             self.group_comments,
@@ -804,6 +839,8 @@ class grouping:
             self.group_function_block,
 
             self.group_declare_section,
+
+            self.group_exceptions,
 
             self.group_transaction,
         ]:
