@@ -235,7 +235,7 @@ class grouping:
     def group_comparison(self, tlist):
         sqlcls = (sql.Parenthesis, sql.Function, sql.Identifier,
                   sql.Operation)
-        ttypes = T_NUMERICAL + T_STRING + T_NAME
+        ttypes = T_NUMERICAL + T_STRING + T_NAME + T.Keyword
 
         def match(token):
             return token.ttype == T.Operator.Comparison
@@ -243,7 +243,7 @@ class grouping:
         def valid(token):
             if imt(token, t=ttypes, i=sqlcls):
                 return True
-            elif token and token.is_keyword and token.normalized == 'NULL':
+            elif token and token.is_keyword:
                 return True
             else:
                 return False

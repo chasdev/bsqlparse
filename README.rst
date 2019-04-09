@@ -12,7 +12,7 @@ Install
 
 From pip, run::
 
-    $ pip install git+https://github.com/ammaradil/sqlparse.git
+    $ pip install git+https://github.com/yoyoasa/sqlparse.git
 
 Consider using the ``--user`` option_.
 

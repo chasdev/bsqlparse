@@ -84,11 +84,16 @@ class StatementSplitter(object):
             else:
                 return 1
 
+        # Case can be outside the begin as well
+        if unified == 'CASE':
+            self._in_case = True
+            return 1
+
         # if (unified in ('IF', 'FOR', 'WHILE', 'LOOP') and
-        if (unified in ('IF', 'WHILE', 'CASE') and
-                self._is_create and self._begin_depth > 0):
-            if unified == 'CASE':
-                self._in_case = True
+        # if unified in ('IF', 'WHILE', 'CASE') and self._is_create and self._begin_depth > 0:
+        if unified in ('IF', 'WHILE') and self._is_create and self._begin_depth > 0:
+            # if unified == 'CASE':
+            #     self._in_case = True
             if unified == 'WHILE':
                 self._inwhile = True
             return 1
