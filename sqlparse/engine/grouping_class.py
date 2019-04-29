@@ -59,6 +59,9 @@ class grouping:
     def group_parenthesis(self, tlist):
         self._group_matching(tlist, sql.Parenthesis)
 
+    def group_openlooptag(self, tlist):
+        self._group_matching(tlist, sql.OpenLoopTag)
+
     def group_case(self, tlist):
         self._group_matching(tlist, sql.Case)
 
@@ -798,6 +801,7 @@ class grouping:
             self.group_dml,
             self.group_select,
             self.group_case,
+            self.group_openlooptag,
             self.group_if,
             self.group_for,
             self.group_begin,

@@ -553,6 +553,12 @@ class Parenthesis(TokenList):
         return self.tokens[1:-1]
 
 
+class OpenLoopTag(TokenList):
+    """Tokens between comparisons"""
+    M_OPEN = T.Comparison, '<<'
+    M_CLOSE = T.Comparison, '>>'
+
+
 class SquareBrackets(TokenList):
     """Tokens between square brackets"""
     M_OPEN = T.Punctuation, '['
