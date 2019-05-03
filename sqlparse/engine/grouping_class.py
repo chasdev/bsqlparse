@@ -165,6 +165,12 @@ class grouping:
     def group_begin(self, tlist):
         self._group_matching(tlist, sql.Begin)
 
+    def group_exit(self, tlist):
+        self._group_matching(tlist, sql.Exit)
+
+    def group_open(self, tlist):
+        self._group_matching(tlist, sql.Open)
+
     def group_typecasts(self, tlist):
         def match(token):
             return token.match(T.Punctuation, '::')
@@ -806,6 +812,8 @@ class grouping:
             self.group_for,
             self.group_begin,
 
+            self.group_exit,
+
             self.group_procedure_heading,
             self.group_function_heading,
 
@@ -847,6 +855,8 @@ class grouping:
             self.group_exceptions,
 
             self.group_transaction,
+
+            self.group_open
         ]:
             func(stmt)
         return stmt

@@ -1063,3 +1063,28 @@ class CursorDef(TokenList):
 class Exceptions(TokenList):
     M_OPEN = T.Keyword, 'EXCEPTION'
     M_CLOSE = T.Keyword, 'END'
+
+
+# New Addition
+class Exit(TokenList):
+    """Tokens between comparisons"""
+    M_OPEN = T.Keyword, 'EXIT'
+    M_CLOSE = T.Punctuation, ';'
+
+    class Condition(TokenList):
+        """Grouping of Conditions inside"""
+
+    def group_condition(self):
+        _start = self.token_next(idx=self.token_next_by(m=(T.Keyword, "WHEN"))[0], skip_cm=True, skip_ws=True)[0]
+        _end = self.token_index(self.token_last(skip_cm=True))
+        self.group_tokens(self.Condition, start=_start, end=_end, include_end=False)
+
+    @property
+    def condition(self):
+        return self.token_next_by(i=self.Condition)[1]
+
+
+# New Addition
+class Open(TokenList):
+    M_OPEN = T.Keyword, 'OPEN'
+    M_CLOSE = T.Punctuation, ';'

@@ -263,6 +263,7 @@ KEYWORDS = {
     'EXISTS': tokens.Keyword,
     'EXTERNAL': tokens.Keyword,
     'EXTRACT': tokens.Keyword,
+    'EXIT': tokens.Keyword,
 
     'FALSE': tokens.Keyword,
     'FETCH': tokens.Keyword,
