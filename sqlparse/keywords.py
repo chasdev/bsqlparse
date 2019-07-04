@@ -341,7 +341,8 @@ KEYWORDS = {
     'LAST': tokens.Keyword,
     'LATERAL': tokens.Keyword,
     'LEADING': tokens.Keyword,
-    'LENGTH': tokens.Keyword,
+    # # Commenting this as it is used a function
+    # 'LENGTH': tokens.Keyword,
     'LESS': tokens.Keyword,
     'LEVEL': tokens.Keyword,
     'LIMIT': tokens.Keyword,
@@ -592,7 +593,8 @@ KEYWORDS = {
     'UNNAMED': tokens.Keyword,
     'UNNEST': tokens.Keyword,
     'UNTIL': tokens.Keyword,
-    'UPPER': tokens.Keyword,
+    # Commenting this as it is used a function
+    # 'UPPER': tokens.Keyword,
     'USAGE': tokens.Keyword,
     'USE': tokens.Keyword,
     'USER': tokens.Keyword,
