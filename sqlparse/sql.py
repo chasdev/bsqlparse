@@ -820,11 +820,11 @@ class Comparison(TokenList):
 
     @property
     def left(self):
-        return self.tokens[0]
+        return self.token_first(skip_cm=True)
 
     @property
     def right(self):
-        return self.tokens[-1]
+        return self.token_last(skip_cm=True)
 
 
 class Comment(TokenList):

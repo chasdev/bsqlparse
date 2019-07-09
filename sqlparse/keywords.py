@@ -341,7 +341,7 @@ KEYWORDS = {
     'LAST': tokens.Keyword,
     'LATERAL': tokens.Keyword,
     'LEADING': tokens.Keyword,
-    # # Commenting this as it is used a function
+    # Commenting this as it is used in a function
     # 'LENGTH': tokens.Keyword,
     'LESS': tokens.Keyword,
     'LEVEL': tokens.Keyword,
@@ -354,7 +354,8 @@ KEYWORDS = {
     'LOCATION': tokens.Keyword,
     'LOCATOR': tokens.Keyword,
     'LOCK': tokens.Keyword,
-    'LOWER': tokens.Keyword,
+    # Commenting this as it is used in a function
+    # 'LOWER': tokens.Keyword,
 
     # 'M': tokens.Keyword,
     'MAP': tokens.Keyword,
@@ -593,7 +594,7 @@ KEYWORDS = {
     'UNNAMED': tokens.Keyword,
     'UNNEST': tokens.Keyword,
     'UNTIL': tokens.Keyword,
-    # Commenting this as it is used a function
+    # Commenting this as it is used in a function
     # 'UPPER': tokens.Keyword,
     'USAGE': tokens.Keyword,
     'USE': tokens.Keyword,

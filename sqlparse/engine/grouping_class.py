@@ -189,7 +189,7 @@ class grouping:
             return token.match(T.Punctuation, '.')
 
         def valid_prev(token):
-            sqlcls = sql.SquareBrackets, sql.Identifier
+            sqlcls = sql.SquareBrackets, sql.Identifier, sql.Function
             ttypes = T.Name, T.String.Symbol
             return imt(token, i=sqlcls, t=ttypes)
 
