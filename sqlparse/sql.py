@@ -907,7 +907,7 @@ class Union(TokenList):
 class Case(TokenList):
     """A CASE statement with one or more WHEN and possibly an ELSE part."""
     M_OPEN = T.Keyword, 'CASE'
-    M_CLOSE = T.Keyword, 'END'
+    M_CLOSE = T.Keyword, ('END', 'END CASE')
 
     def get_cases(self, skip_ws=False):
         """Returns a list of 2-tuples (condition, value).
