@@ -572,6 +572,14 @@ class SquareBrackets(TokenList):
 class Assignment(TokenList):
     """An assignment like 'var := val;'"""
 
+    @property
+    def left(self):
+        return self.token_first(skip_cm=True)
+
+    @property
+    def right(self):
+        return self.token_last(skip_cm=True)
+
 
 class If(TokenList):
     """An 'if' clause with possible 'else if' or 'else' parts."""
@@ -1048,6 +1056,18 @@ class Transaction(TokenList):
 
 class Operation(TokenList):
     """Grouping of operations"""
+
+    @property
+    def left(self):
+        return self.token_first(skip_cm=True)
+
+    @property
+    def right(self):
+        return self.token_last(skip_cm=True)
+
+    @property
+    def operator(self):
+        return self.token_next_by(t=T.Operator)[1]
 
 
 class ReturnType(TokenList):
