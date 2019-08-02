@@ -854,7 +854,7 @@ class grouping:
 
             self.group_exceptions,
 
-            self.group_transaction,
+            # self.group_transaction,
 
             self.group_open
         ]:
