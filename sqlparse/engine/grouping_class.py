@@ -244,7 +244,7 @@ class grouping:
     def group_comparison(self, tlist):
         sqlcls = (sql.Parenthesis, sql.Function, sql.Identifier,
                   sql.Operation)
-        ttypes = T_NUMERICAL + T_STRING + T_NAME + T.Keyword + T.Token.Name.Builtin
+        ttypes = T_NUMERICAL + T_STRING + T_NAME + (T.Keyword, T.Name.Builtin)
 
         def match(token):
             return token.ttype == T.Operator.Comparison
