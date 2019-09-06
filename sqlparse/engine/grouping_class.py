@@ -435,7 +435,7 @@ class grouping:
                     end, etoken = tlist.token_next(idx=bid, skip_cm=True, skip_ws=True)
                     if etoken:
                         send, stoken = tlist.token_next(idx=end, skip_cm=True, skip_ws=True)
-                        if stoken.value == ';':
+                        if stoken and stoken.value == ';':
                             tlist.group_tokens(sql.ProcedureBlock, start, send)
                         else:
                             tlist.group_tokens(sql.ProcedureBlock, start, end)
