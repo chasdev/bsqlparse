@@ -213,7 +213,8 @@ class grouping:
             return token.is_keyword and token.normalized == 'AS'
 
         def valid_prev(token):
-            return (token.normalized == 'NULL' or not token.is_keyword) and not isinstance(token, sql.FunctionHeading)
+            return (token.normalized == 'NULL' or not token.is_keyword) \
+                   and not isinstance(token, (sql.FunctionHeading, sql.ProcedureHeading))
 
         def valid_next(token):
             ttypes = T.DML, T.DDL
