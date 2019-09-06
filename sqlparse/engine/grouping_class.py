@@ -879,7 +879,7 @@ class grouping:
                 continue
 
             if recurse and token.is_group and not isinstance(token, cls):
-                self._group(token, cls, match, valid_prev, valid_next, post, extend)
+                self._group(token, cls, match, valid_prev, valid_next, post, extend, skip_cm=skip_cm)
 
             if match(token):
                 nidx, next_ = tlist.token_next(tidx, skip_cm=skip_cm)
