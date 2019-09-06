@@ -26,7 +26,7 @@ SQL_REGEX = {
         (r'/\*[\s\S]*?\*/', tokens.Comment.Multiline),
 
         (r'(REM ).*?(\r\n|\r|\n|$)', tokens.Comment.Single.Rem),
-        (r'(START).*?(\r\n|\r|\n|$)', tokens.Comment.Single.Start),
+        (r'(START ).*?(\r\n|\r|\n|$)', tokens.Comment.Single.Start),
 
         (r'(\r\n|\r|\n)', tokens.Newline),
         (r'\s+', tokens.Whitespace),
