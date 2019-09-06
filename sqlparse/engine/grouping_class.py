@@ -315,8 +315,7 @@ class grouping:
         m_role = T.Keyword, ('null', 'role')
         sqlcls = (sql.Function, sql.Case, sql.Identifier, sql.Comparison,
                   sql.IdentifierList, sql.Operation, sql.FunctionParam)
-        ttypes = (T_NUMERICAL + T_STRING + T_NAME +
-                  (T.Keyword, T.Comment, T.Wildcard))
+        ttypes = (T_NUMERICAL + T_STRING + T_NAME + (T.Keyword, T.Comment, T.Wildcard))
 
         def match(token):
             return token.match(T.Punctuation, ',')
@@ -329,7 +328,7 @@ class grouping:
 
         valid_prev = valid_next = valid
         self._group(tlist, sql.IdentifierList, match,
-                    valid_prev, valid_next, post, extend=True)
+                    valid_prev, valid_next, post, extend=True, skip_cm=True)
 
     @recurse(sql.Comment)
     def group_comments(self, tlist):
@@ -866,7 +865,8 @@ class grouping:
                valid_next=lambda t: True,
                post=None,
                extend=True,
-               recurse=True
+               recurse=True,
+               skip_cm=False
                ):
         """Groups together tokens that are joined by a middle token. ie. x < y"""
 
@@ -882,7 +882,7 @@ class grouping:
                 self._group(token, cls, match, valid_prev, valid_next, post, extend)
 
             if match(token):
-                nidx, next_ = tlist.token_next(tidx)
+                nidx, next_ = tlist.token_next(tidx, skip_cm=skip_cm)
                 if prev_ and valid_prev(prev_) and valid_next(next_):
                     from_idx, to_idx = post(tlist, pidx, tidx, nidx)
                     grp = tlist.group_tokens(cls, from_idx, to_idx, extend=extend)
