@@ -241,9 +241,42 @@ class grouping:
         valid_prev = valid_next = valid
         self._group(tlist, sql.Assignment, match, valid_prev, valid_next, post)
 
+    def group_notfound(self, tlist, cls=sql.NotFound):
+        opens = []
+        tidx_offset = 0
+        for idx, token in enumerate(list(tlist)):
+            tidx = idx - tidx_offset
+
+            if token.is_whitespace:
+                # ~50% of tokens will be whitespace. Will checking early
+                # for them avoid 3 comparisons, but then add 1 more comparison
+                # for the other ~50% of tokens...
+                continue
+
+            if token.is_group and not isinstance(token, cls):
+                # Check inside previously grouped (ie. parenthesis) if group
+                # of different type is inside (ie, case). though ideally  should
+                # should check for all open/close tokens at once to avoid recursion
+                # n = grouping()
+                self.group_notfound(token, cls)
+                opens = None
+                continue
+
+            if token.match(*cls.M_OPEN):
+                _prev_idx, _prev_tkn = tlist.token_prev(tidx, skip_cm=True)
+                if _prev_tkn and (_prev_tkn.ttype == sql.T.Name
+                                  or isinstance(_prev_tkn, sql.Identifier)
+                                  or _prev_tkn.ttype == sql.T.Keyword):
+                    opens = _prev_idx
+            elif imt(token, m=cls.M_CLOSE) and opens:
+                close_idx = tidx
+                tlist.group_tokens(cls, opens, close_idx)
+                tidx_offset += close_idx - opens
+            else:
+                opens = None
+
     def group_comparison(self, tlist):
-        sqlcls = (sql.Parenthesis, sql.Function, sql.Identifier,
-                  sql.Operation)
+        sqlcls = (sql.Parenthesis, sql.Function, sql.Identifier, sql.Operation, sql.NotFound)
         ttypes = T_NUMERICAL + T_STRING + T_NAME + (T.Keyword, T.Name.Builtin)
 
         def match(token):
@@ -829,6 +862,7 @@ class grouping:
             self.group_order,
             self.group_typecasts,
             self.group_operator,
+            self.group_notfound,
             self.group_comparison,
             self.group_as,
             self.group_aliased,

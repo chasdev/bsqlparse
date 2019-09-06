@@ -351,7 +351,7 @@ KEYWORDS = {
     'LOCAL': tokens.Keyword,
     'LOCALTIME': tokens.Keyword,
     'LOCALTIMESTAMP': tokens.Keyword,
-    'LOCATION': tokens.Keyword,
+    # 'LOCATION': tokens.Keyword,
     'LOCATOR': tokens.Keyword,
     'LOCK': tokens.Keyword,
     # Commenting this as it is used in a function
@@ -489,6 +489,7 @@ KEYWORDS = {
     'ROW': tokens.Keyword,
     'ROWS': tokens.Keyword,
     'ROW_COUNT': tokens.Keyword,
+    'ROWCOUNT': tokens.Keyword,
     'RULE': tokens.Keyword,
 
     'SAVE_POINT': tokens.Keyword,
@@ -576,7 +577,7 @@ KEYWORDS = {
     'TRIGGER_CATALOG': tokens.Keyword,
     'TRIGGER_NAME': tokens.Keyword,
     'TRIGGER_SCHEMA': tokens.Keyword,
-    'TRIM': tokens.Keyword,
+    # 'TRIM': tokens.Keyword,
     'TRUE': tokens.Keyword,
     'TRUNCATE': tokens.Keyword,
     'TRUSTED': tokens.Keyword,

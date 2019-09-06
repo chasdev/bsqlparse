@@ -1108,3 +1108,9 @@ class Exit(TokenList):
 class Open(TokenList):
     M_OPEN = T.Keyword, 'OPEN'
     M_CLOSE = T.Punctuation, ';'
+
+
+class NotFound(TokenList):
+    """Tokens between comparisons"""
+    M_OPEN = T.Operator, '%'
+    M_CLOSE = [(T.Keyword, 'FOUND'), (T.Keyword, 'NOTFOUND'), (T.Keyword, 'ROWCOUNT')]
