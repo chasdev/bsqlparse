@@ -175,7 +175,7 @@ KEYWORDS = {
     'COMPRESS': tokens.Keyword,
     'COMMAND_FUNCTION': tokens.Keyword,
     'COMMAND_FUNCTION_CODE': tokens.Keyword,
-    'COMMENT': tokens.Keyword,
+    'COMMENT ON': tokens.Keyword,
     'COMMIT': tokens.Keyword.DML,
     'COMMITTED': tokens.Keyword,
     'COMPLETION': tokens.Keyword,
