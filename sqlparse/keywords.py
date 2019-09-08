@@ -77,7 +77,7 @@ SQL_REGEX = {
          r'|(CROSS\s+|NATURAL\s+)?)?JOIN\b', tokens.Keyword),
         (r'END(\s+IF|\s+LOOP|\s+WHILE|\s+CASE)?\b', tokens.Keyword),
 
-        (r'FOR\s[A-Z]\w*\sIN\b', tokens.Keyword.ForIn),
+        (r'FOR\w*\s[A-Z]\w*\sIN\b', tokens.Keyword.ForIn),
         (r'FOR\sUPDATE\b', tokens.Keyword),
 
         (r'NOT\s+NULL\b', tokens.Keyword),

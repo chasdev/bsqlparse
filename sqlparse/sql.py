@@ -814,7 +814,7 @@ class DataType(TokenList):
 class For(TokenList):
     """A 'FOR' loop."""
     # M_OPEN = T.Keyword, ('FOR', 'FOREACH')
-    M_OPEN = [(T.ForIn, r'FOR\s[A-Z]\w*\sIN\b', True), (T.Keyword, 'LOOP')]
+    M_OPEN = [(T.ForIn, r'FOR\w*\s[A-Z]\w*\sIN\b', True), (T.Keyword, 'LOOP')]
     M_CLOSE = T.Keyword, 'END LOOP'
 
     @property
