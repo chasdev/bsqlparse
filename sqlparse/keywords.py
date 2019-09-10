@@ -101,7 +101,7 @@ SQL_REGEX = [(re.compile(rx, FLAGS).match, tt) for rx, tt in SQL_REGEX['root']]
 
 KEYWORDS = {
     'ABORT': tokens.Keyword,
-    'ABS': tokens.Keyword,
+    # 'ABS': tokens.Keyword,
     'ABSOLUTE': tokens.Keyword,
     'ACCESS': tokens.Keyword,
     'ADA': tokens.Keyword,
@@ -369,7 +369,7 @@ KEYWORDS = {
     'MINUTE': tokens.Keyword,
     'MINUS': tokens.Keyword,
     'MINVALUE': tokens.Keyword,
-    'MOD': tokens.Keyword,
+    # 'MOD': tokens.Keyword,
     'MODE': tokens.Keyword,
     'MODIFIES': tokens.Keyword,
     'MODIFY': tokens.Keyword,
@@ -544,7 +544,7 @@ KEYWORDS = {
     'SUBLIST': tokens.Keyword,
     'SUBSTRING': tokens.Keyword,
     'SUCCESSFUL': tokens.Keyword,
-    'SUM': tokens.Keyword,
+    # 'SUM': tokens.Keyword,
     'SYMMETRIC': tokens.Keyword,
     'SYNONYM': tokens.Keyword,
     'SYSID': tokens.Keyword,
