@@ -13,6 +13,9 @@ T_NUMERICAL = (T.Number, T.Number.Integer, T.Number.Float)
 T_STRING = (T.String, T.String.Single, T.String.Symbol)
 T_NAME = (T.Name, T.Name.Placeholder)
 
+# These are the set of special keywords which can be used as a function name and as a keyword
+SPECIAL_KEYWORDS = [(T.Keyword, 'CURSOR'), (T.Keyword, 'REPLACE')]
+
 
 class grouping:
     def __init__(self):
@@ -588,12 +591,12 @@ class grouping:
         # if has_create and has_table:
         #     return
 
-        tidx, token = tlist.token_next_by(t=T.Name)
+        tidx, token = tlist.token_next_by(t=T.Name, m=SPECIAL_KEYWORDS)
         while token:
-            nidx, next_ = tlist.token_next(tidx)
+            nidx, next_ = tlist.token_next(tidx, skip_cm=True)
             if isinstance(next_, sql.Parenthesis):
                 tlist.group_tokens(sql.Function, tidx, nidx)
-            tidx, token = tlist.token_next_by(t=T.Name, idx=tidx)
+            tidx, token = tlist.token_next_by(t=T.Name, m=SPECIAL_KEYWORDS, idx=tidx)
 
     @recurse(sql.ProcedureHeading)
     def group_procedure_heading(self, tlist):
