@@ -822,6 +822,9 @@ class For(TokenList):
         idx, lo = self.token_next_by(t=(T.Keyword, 'LOOP'))
         return idx
 
+    def get_condition(self):
+        return self.tokens[self.token_index(self.token_first(skip_cm=True)): self.loop_idx + 1]
+
 
 class Comparison(TokenList):
     """A comparison used for example in WHERE clauses."""
