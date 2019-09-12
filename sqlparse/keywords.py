@@ -523,7 +523,7 @@ KEYWORDS = {
     'SPECIFIC_NAME': tokens.Keyword,
     'SQL': tokens.Keyword,
     'SQLBUF': tokens.Keyword,
-    'SQLCODE': tokens.Keyword,
+    # 'SQLCODE': tokens.Keyword,
     'SQLERROR': tokens.Keyword,
     'SQLEXCEPTION': tokens.Keyword,
     'SQLSTATE': tokens.Keyword,
