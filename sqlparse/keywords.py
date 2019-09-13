@@ -58,7 +58,7 @@ SQL_REGEX = {
         # Spaces around period `schema . name` are valid identifier
         # TODO: Spaces before period not implemented
         (r'[A-Z]\w*(?=\s*\.)', tokens.Name),  # 'Name'   .
-        (r'(?<=\.)[_\$A-Za-z]*\w*', tokens.Name),  # .'Name'
+        (r'(?<=\.)[_\$A-Za-z]+\w*', tokens.Name),  # .'Name'
 
         # TODO: `1.` and `.1` are valid numbers
         (r'-?0x[\dA-F]+', tokens.Number.Hexadecimal),
