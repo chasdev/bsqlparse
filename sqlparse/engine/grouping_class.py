@@ -14,7 +14,7 @@ T_STRING = (T.String, T.String.Single, T.String.Symbol)
 T_NAME = (T.Name, T.Name.Placeholder)
 
 # These are the set of special keywords which can be used as a function name and as a keyword
-SPECIAL_KEYWORDS = [(T.Keyword, 'CURSOR'), (T.Keyword, 'REPLACE')]
+SPECIAL_KEYWORDS = [(T.Keyword, 'CURSOR'), (T.Keyword.DML, 'REPLACE')]
 
 
 class grouping:
