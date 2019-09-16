@@ -54,6 +54,9 @@ SQL_REGEX = {
 
         (r'(@|##|#)[A-Z]\w+', tokens.Name),
 
+        # Very very special and Unique case
+        (r'(?<=\=\s)-[_A-Za-z]+', tokens.Name.Negative),  # = -Name
+
         # see issue #39
         # Spaces around period `schema . name` are valid identifier
         # TODO: Spaces before period not implemented
