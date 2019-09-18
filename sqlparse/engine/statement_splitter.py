@@ -18,7 +18,7 @@ class StatementSplitter(object):
         """Set the filter attributes to its default values"""
         self._in_declare = False
         self._is_create = False
-        self._in_case = False
+        self._in_case = 0
         self._infor = False
         self._inwhile = False
         self._begin_depth = 0
@@ -64,8 +64,8 @@ class StatementSplitter(object):
         # Would having multiple CASE WHEN END and a Assignment Operator
         # cause the statement to cut off prematurely?
         if unified == 'END':
-            if self._in_case:
-                self._in_case = False
+            if self._in_case > 0:
+                self._in_case = self._in_case - 1
                 return -1
             self._begin_depth = max(0, self._begin_depth - 1)
             return -1
@@ -86,7 +86,7 @@ class StatementSplitter(object):
 
         # Case can be outside the begin as well
         if unified == 'CASE':
-            self._in_case = True
+            self._in_case = self._in_case + 1
             return 1
 
         # if (unified in ('IF', 'FOR', 'WHILE', 'LOOP') and
@@ -98,7 +98,11 @@ class StatementSplitter(object):
                 self._inwhile = True
             return 1
 
-        if unified in ('END IF', 'END WHILE', 'END LOOP', 'END CASE'):
+        if unified == 'END CASE':
+            self._in_case = self._in_case - 1
+            return -1
+
+        if unified in ('END IF', 'END WHILE', 'END LOOP'):
             return -1
 
         # Default
