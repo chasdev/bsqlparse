@@ -772,10 +772,33 @@ class FunctionParam(TokenList):
                     self.nocopy_ = token
                     continue
                 if not self.data_type_ and imt(token, m=[(T.Keyword, 'DEFAULT')], t=T.Assignment):
-                    self.data_type_ = list(self.flatten())[temp_i + 2:i - 1]
+                    _start = list(self.flatten())[temp_i + 2]
+                    while _start.parent:
+                        if _start.parent == self:
+                            break
+                        else:
+                            _start = _start.parent
+
+                    _end = list(self.flatten())[i - 2]
+                    while _end.parent:
+                        if _end.parent == self:
+                            break
+                        else:
+                            _end = _end.parent
+
+                    self.data_type_ = self.tokens[self.token_index(_start):self.token_index(_end) + 1]
+                    # self.data_type_ = list(self.flatten())[temp_i + 2:i - 1]
                     # self.data_type_ = list(self.flatten())[i-1]
         if not self.data_type_:
-            self.data_type_ = list(self.flatten())[temp_i + 2:i + 1]
+            # Go to param
+            _param = list(self.flatten())[temp_i + 2]
+            while _param.parent:
+                if _param.parent == self:
+                    break
+                else:
+                    _param = _param.parent
+            self.data_type_ = self.tokens[self.token_index(_param): len(self.tokens) + 1]
+            # self.data_type_ = list(self.flatten())[temp_i + 2:i + 1]
             # self.data_type_ = list(self.flatten())[i]
 
 
