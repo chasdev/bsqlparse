@@ -810,6 +810,22 @@ class DeclareSection(TokenList):
 class DataType(TokenList):
     """ Param Data type"""
 
+    def get_name(self):
+        first = self.token_first(skip_cm=True)
+        if isinstance(first, Assignment):
+            first = first.token_first(skip_cm=True)
+        if isinstance(first, Identifier):
+            first = first.token_first(skip_cm=True)
+        return first
+
+    def get_type(self):
+        last = self.token_last(skip_cm=True)
+        if isinstance(last, Identifier):
+            last = last.token_last(skip_cm=True)
+        if isinstance(last, Assignment):
+            last = last.token_last(skip_cm=True)
+        return last
+
 
 class For(TokenList):
     """A 'FOR' loop."""
