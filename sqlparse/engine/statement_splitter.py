@@ -70,8 +70,8 @@ class StatementSplitter(object):
             self._begin_depth = max(0, self._begin_depth - 1)
             return -1
 
-        if ((unified.startswith(
-            'FOR') and ttype == T.ForIn) or unified == 'LOOP') and self._is_create and self._begin_depth > 0:
+        if ((unified.startswith('FOR')
+             and ttype == T.ForIn) or unified == 'LOOP') and self._is_create and self._begin_depth > 0:
             if unified.startswith('FOR'):
                 self._infor = True
                 return 1
