@@ -906,6 +906,8 @@ class Block(TokenList):
                     fl.append(su.parent)
                 elif su.name in _package.fpn:
                     fl.append(su)
+            elif isinstance(su, Identifier) and isinstance(su.parent, (If, For, Begin)):
+                fl.append(su)
             fl += self._get_all_functions(su.get_sublists())
         return fl
 
