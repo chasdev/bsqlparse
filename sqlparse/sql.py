@@ -909,7 +909,7 @@ class Block(TokenList):
             elif isinstance(su, Identifier) and isinstance(su.parent, (If, For, Begin)):
                 fl.append(su)
             fl += self._get_all_functions(su.get_sublists())
-        return fl
+        return list(set(fl))
 
 
 class FunctionBlock(Block):
