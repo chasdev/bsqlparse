@@ -75,7 +75,7 @@ Parsing::
 """
 
 setup(
-    name='bbsqlparse',
+    name='bsqlparse',
     version=get_version(),
     author='Andi Albrecht',
     author_email='albrecht.andi@gmail.com',
