@@ -1,19 +1,19 @@
-:mod:`sqlparse` -- Parse SQL statements
+:mod:`bsqlparse` -- Parse SQL statements
 =======================================
 
-.. module:: sqlparse
+.. module:: bsqlparse
    :synopsis: Parse SQL statements.
 
-The :mod:`sqlparse` module provides the following functions on module-level.
+The :mod:`bsqlparse` module provides the following functions on module-level.
 
-.. autofunction:: sqlparse.split
+.. autofunction:: bsqlparse.split
 
-.. autofunction:: sqlparse.format
+.. autofunction:: bsqlparse.format
 
-.. autofunction:: sqlparse.parse
+.. autofunction:: bsqlparse.parse
 
 In most cases there's no need to set the `encoding` parameter. If
-`encoding` is not set, sqlparse assumes that the given SQL statement
+`encoding` is not set, bsqlparse assumes that the given SQL statement
 is encoded either in utf-8 or latin-1.
 
 
@@ -22,7 +22,7 @@ is encoded either in utf-8 or latin-1.
 Formatting of SQL Statements
 ----------------------------
 
-The :meth:`~sqlparse.format` function accepts the following keyword arguments.
+The :meth:`~bsqlparse.format` function accepts the following keyword arguments.
 
 ``keyword_case``
   Changes how keywords are formatted. Allowed values are "upper", "lower"

@@ -2,12 +2,12 @@
 #
 # Copyright (C) 2016 Andi Albrecht, albrecht.andi@gmail.com
 #
-# This module is part of python-sqlparse and is released under
+# This module is part of python-bsqlparse and is released under
 # the BSD License: https://opensource.org/licenses/BSD-3-Clause
 
-from sqlparse import sql
-from sqlparse import tokens as T
-from sqlparse.utils import recurse, imt
+from bsqlparse import sql
+from bsqlparse import tokens as T
+from bsqlparse.utils import recurse, imt
 
 T_NUMERICAL = (T.Number, T.Number.Integer, T.Number.Float)
 T_STRING = (T.String, T.String.Single, T.String.Symbol)

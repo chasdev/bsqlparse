@@ -2,12 +2,12 @@
 #
 # Copyright (C) 2016 Andi Albrecht, albrecht.andi@gmail.com
 #
-# This module is part of python-sqlparse and is released under
+# This module is part of python-bsqlparse and is released under
 # the BSD License: https://opensource.org/licenses/BSD-3-Clause
 
-from sqlparse.engine import grouping
-from sqlparse.engine.filter_stack import FilterStack
-from sqlparse.engine.statement_splitter import StatementSplitter
+from bsqlparse.engine import grouping
+from bsqlparse.engine.filter_stack import FilterStack
+from bsqlparse.engine.statement_splitter import StatementSplitter
 
 __all__ = [
     'grouping',

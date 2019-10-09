@@ -2,20 +2,20 @@
 #
 # Copyright (C) 2016 Andi Albrecht, albrecht.andi@gmail.com
 #
-# This module is part of python-sqlparse and is released under
+# This module is part of python-bsqlparse and is released under
 # the BSD License: https://opensource.org/licenses/BSD-3-Clause
 
 """Parse SQL statements."""
 
 # Setup namespace
-from sqlparse import sql
-from sqlparse import cli
-from sqlparse import engine
-from sqlparse import tokens
-from sqlparse import filters
-from sqlparse import formatter
+from bsqlparse import sql
+from bsqlparse import cli
+from bsqlparse import engine
+from bsqlparse import tokens
+from bsqlparse import filters
+from bsqlparse import formatter
 
-from sqlparse.compat import text_type
+from bsqlparse.compat import text_type
 
 __version__ = '0.2.3'
 __all__ = ['engine', 'filters', 'formatter', 'sql', 'tokens', 'cli']
@@ -26,7 +26,7 @@ def parse(sql, encoding=None):
 
     :param sql: A string containing one or more SQL statements.
     :param encoding: The encoding of the statement (optional).
-    :returns: A tuple of :class:`~sqlparse.sql.Statement` instances.
+    :returns: A tuple of :class:`~bsqlparse.sql.Statement` instances.
     """
     return tuple(parsestream(sql, encoding))
 
@@ -36,7 +36,7 @@ def parsestream(stream, encoding=None):
 
     :param stream: A file-like object.
     :param encoding: The encoding of the stream contents (optional).
-    :returns: A generator of :class:`~sqlparse.sql.Statement` instances.
+    :returns: A generator of :class:`~bsqlparse.sql.Statement` instances.
     """
     stack = engine.FilterStack()
     stack.enable_grouping()

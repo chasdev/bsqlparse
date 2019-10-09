@@ -3,7 +3,7 @@
 Analyzing the Parsed Statement
 ==============================
 
-When the :meth:`~sqlparse.parse` function is called the returned value
+When the :meth:`~bsqlparse.parse` function is called the returned value
 is a tree-ish representation of the analyzed statements. The returned
 objects can be used by applications to retrieve further information about
 the parsed SQL.
@@ -13,14 +13,14 @@ Base Classes
 ------------
 
 All returned objects inherit from these base classes.
-The :class:`~sqlparse.sql.Token` class represents a single token and
-:class:`~sqlparse.sql.TokenList` class is a group of tokens.
+The :class:`~bsqlparse.sql.Token` class represents a single token and
+:class:`~bsqlparse.sql.TokenList` class is a group of tokens.
 The latter provides methods for inspecting its child tokens.
 
-.. autoclass:: sqlparse.sql.Token
+.. autoclass:: bsqlparse.sql.Token
    :members:
 
-.. autoclass:: sqlparse.sql.TokenList
+.. autoclass:: bsqlparse.sql.TokenList
    :members:
 
 
@@ -29,36 +29,36 @@ SQL Representing Classes
 
 The following classes represent distinct parts of a SQL statement.
 
-.. autoclass:: sqlparse.sql.Statement
+.. autoclass:: bsqlparse.sql.Statement
    :members:
 
-.. autoclass:: sqlparse.sql.Comment
+.. autoclass:: bsqlparse.sql.Comment
    :members:
 
-.. autoclass:: sqlparse.sql.Identifier
+.. autoclass:: bsqlparse.sql.Identifier
    :members:
 
-.. autoclass:: sqlparse.sql.IdentifierList
+.. autoclass:: bsqlparse.sql.IdentifierList
    :members:
 
-.. autoclass:: sqlparse.sql.Where
+.. autoclass:: bsqlparse.sql.Where
    :members:
 
-.. autoclass:: sqlparse.sql.Case
+.. autoclass:: bsqlparse.sql.Case
    :members:
 
-.. autoclass:: sqlparse.sql.Parenthesis
+.. autoclass:: bsqlparse.sql.Parenthesis
    :members:
 
-.. autoclass:: sqlparse.sql.If
+.. autoclass:: bsqlparse.sql.If
    :members:
 
-.. autoclass:: sqlparse.sql.For
+.. autoclass:: bsqlparse.sql.For
    :members:
 
-.. autoclass:: sqlparse.sql.Assignment
+.. autoclass:: bsqlparse.sql.Assignment
    :members:
 
-.. autoclass:: sqlparse.sql.Comparison
+.. autoclass:: bsqlparse.sql.Comparison
    :members:
 

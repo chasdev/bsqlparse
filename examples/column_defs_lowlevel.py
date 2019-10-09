@@ -3,13 +3,13 @@
 #
 # Copyright (C) 2016 Andi Albrecht, albrecht.andi@gmail.com
 #
-# This example is part of python-sqlparse and is released under
+# This example is part of python-bsqlparse and is released under
 # the BSD License: https://opensource.org/licenses/BSD-3-Clause
 #
 # Example for retrieving column definitions from a CREATE statement
 # using low-level functions.
 
-import sqlparse
+import bsqlparse
 
 
 def extract_definitions(token_list):
@@ -18,16 +18,16 @@ def extract_definitions(token_list):
     tmp = []
     # grab the first token, ignoring whitespace. idx=1 to skip open (
     tidx, token = token_list.token_next(1)
-    while token and not token.match(sqlparse.tokens.Punctuation, ')'):
+    while token and not token.match(bsqlparse.tokens.Punctuation, ')'):
         tmp.append(token)
         # grab the next token, this times including whitespace
         tidx, token = token_list.token_next(tidx, skip_ws=False)
         # split on ",", except when on end of statement
-        if token and token.match(sqlparse.tokens.Punctuation, ','):
+        if token and token.match(bsqlparse.tokens.Punctuation, ','):
             definitions.append(tmp)
             tmp = []
             tidx, token = token_list.token_next(tidx)
-    if tmp and isinstance(tmp[0], sqlparse.sql.Identifier):
+    if tmp and isinstance(tmp[0], bsqlparse.sql.Identifier):
         definitions.append(tmp)
     return definitions
 
@@ -38,10 +38,10 @@ if __name__ == '__main__':
              title varchar(200) not null,
              description text);"""
 
-    parsed = sqlparse.parse(SQL)[0]
+    parsed = bsqlparse.parse(SQL)[0]
 
     # extract the parenthesis which holds column definitions
-    _, par = parsed.token_next_by(i=sqlparse.sql.Parenthesis)
+    _, par = parsed.token_next_by(i=bsqlparse.sql.Parenthesis)
     columns = extract_definitions(par)
 
     for column in columns:
